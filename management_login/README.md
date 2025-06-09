@@ -43,7 +43,7 @@ management_login/
 
 ### Sistema de Roles
 
-El sistema implementa una jerarquía de tres niveles:
+El sistema implementa una jerarquía de tres niveles
 
 - **superadmin**: Acceso completo, puede crear usuarios admin
 - **admin**: Gestión de empresa y usuarios, puede crear usuarios regulares
