@@ -1,0 +1,30 @@
+import jwt from 'jsonwebtoken';
+import pool from '../services/db.js';
+
+export const authenticate = (requiredRoles = []) => {
+  return async (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Acceso no autorizado' });
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      
+      const conn = await pool.getConnection();
+      const [user] = await conn.query(
+        'SELECT BIN_TO_UUID(id) AS id, rol_nombre FROM usuarios WHERE id = UUID_TO_BIN(?)',
+        [decoded.user_id]
+      );
+
+      conn.release();
+
+      if (!user.length || (requiredRoles.length && !requiredRoles.includes(user[0].rol_nombre))) {
+        return res.status(403).json({ error: 'Acceso prohibido' });
+      }
+
+      req.user = user[0];
+      next();
+    } catch (error) {
+      res.status(401).json({ error: 'Token inválido' });
+    }
+  };
+};
